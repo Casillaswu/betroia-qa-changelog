@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta name="robots" content="noindex,nofollow">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>前台变动日志 2026年11月</title>
+<style>
+  :root {
+    --bg: #f1eee8;
+    --paper: #fffcf7;
+    --ink: #1c1916;
+    --muted: #6d675e;
+    --line: #e3ddd3;
+    --accent: #1d4a47;
+    --accent-soft: #e4f0ee;
+    --sample: #7a4e00;
+    --sample-bg: #f8e6b0;
+    --sample-line: #e2c56a;
+    --before: #8a2b36;
+    --after: #1b6a43;
+    --chip: #f4f0e8;
+    --shadow: 0 10px 28px rgba(40, 30, 16, .08);
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei UI", "Microsoft YaHei", "Noto Sans SC", "Noto Sans CJK SC", "Source Han Sans SC", system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.55;
+    min-height: 100vh;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 28px 24px 80px; }
+  header.top { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 22px; }
+  .brand h1 { font-size: 26px; font-weight: 700; letter-spacing: .02em; margin: 0 0 4px; }
+  .brand p { margin: 0; color: var(--muted); font-size: 13px; }
+  .tabs { display: flex; gap: 6px; background: #e6e1d8; padding: 4px; border-radius: 999px; }
+  .tabs button {
+    border: 0; background: transparent; color: var(--ink);
+    padding: 8px 16px; border-radius: 999px; cursor: pointer; font: inherit; font-size: 14px;
+  }
+  .tabs button.on { background: var(--paper); box-shadow: 0 1px 3px rgba(0,0,0,.06); font-weight: 600; }
+  .demo-banner {
+    display: none;
+    background: var(--sample-bg);
+    border: 1px solid var(--sample-line);
+    color: #5a3a00;
+    border-radius: 12px;
+    padding: 10px 14px;
+    margin-bottom: 16px;
+    font-size: 14px;
+  }
+  .demo-banner strong { color: var(--sample); }
+  .toolbar {
+    display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+    background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 12px 14px; margin-bottom: 16px;
+  }
+  .toolbar label { font-size: 12px; color: var(--muted); display: flex; flex-direction: column; gap: 4px; }
+  .toolbar select, .toolbar input[type="date"] {
+    font: inherit; font-size: 14px; color: var(--ink);
+    border: 1px solid var(--line); background: #fff; border-radius: 8px;
+    padding: 6px 10px; min-width: 140px;
+  }
+  .stats {
+    background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 16px 18px 10px; margin-bottom: 16px;
+  }
+  .stats h2 { font-size: 13px; font-weight: 600; color: var(--muted); margin: 0 0 10px; letter-spacing: .04em; }
+  .bars { display: flex; flex-wrap: wrap; gap: 8px 18px; }
+  .bar-item { min-width: 140px; flex: 1 1 140px; }
+  .bar-item .lab { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 3px; }
+  .bar-item .lab b { font-variant-numeric: tabular-nums; }
+  .track { height: 6px; background: #efeae1; border-radius: 99px; overflow: hidden; }
+  .track > i { display: block; height: 100%; background: var(--accent); border-radius: 99px; }
+  .list { display: flex; flex-direction: column; gap: 10px; }
+  .card {
+    background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 14px 16px; cursor: pointer; box-shadow: none;
+    display: grid; grid-template-columns: 92px 1fr auto; gap: 12px; align-items: start;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .card:hover, .card:focus { border-color: #c9c2b5; box-shadow: var(--shadow); outline: none; }
+  .card .when { font-size: 12px; color: var(--muted); }
+  .card .when b { display: block; color: var(--ink); font-size: 14px; margin-bottom: 2px; }
+  .card h3 { margin: 0 0 4px; font-size: 15px; font-weight: 650; }
+  .card p { margin: 0; color: #3f3a34; font-size: 14px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .chip { font-size: 11px; padding: 2px 8px; border-radius: 999px; background: var(--chip); color: #4a453e; border: 1px solid var(--line); }
+  .chip.type { background: var(--accent-soft); border-color: #cfe0dd; color: var(--accent); }
+  .chip.sample { background: var(--sample-bg); border-color: var(--sample-line); color: var(--sample); font-weight: 600; }
+  .chip.wait { background: #f3efe6; color: var(--muted); }
+  .empty {
+    text-align: center; padding: 64px 20px; color: var(--muted);
+    background: var(--paper); border: 1px dashed #d5d0c6; border-radius: var(--radius);
+  }
+  .empty .big { font-size: 18px; color: var(--ink); font-weight: 650; margin: 0 0 6px; }
+  /* baseline */
+  .base-layout { display: grid; grid-template-columns: 240px 1fr; gap: 14px; }
+  .page-nav { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px; max-height: 70vh; overflow: auto; }
+  .page-nav button {
+    display: block; width: 100%; text-align: left; border: 0; background: transparent;
+    font: inherit; font-size: 14px; padding: 8px 10px; border-radius: 8px; cursor: pointer; color: var(--ink);
+  }
+  .page-nav button.on { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+  .page-nav .lang-switch { display: flex; gap: 6px; margin: 0 0 8px; }
+  .thumbs { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; align-items: start; }
+  .thumb {
+    background: var(--paper); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; cursor: pointer;
+  }
+  .thumb .frame {
+    max-height: 480px; overflow-y: auto; overflow-x: hidden; background: #111; scrollbar-width: thin;
+  }
+  .thumb .frame.long { max-height: 520px; }
+  .thumb img { width: 100%; display: block; background: #111; vertical-align: top; }
+  .thumb figcaption { font-size: 12px; padding: 8px 10px 10px; color: var(--muted); }
+  .thumb figcaption b { display: block; color: var(--ink); font-size: 13px; }
+  .thumb figcaption .meta { margin-top: 2px; }
+  .thumb.unusable { border-color: #e2c56a; }
+  .chip.capture { font-size: 10px; padding: 1px 7px; }
+  .chip.bad { background: var(--sample-bg); border-color: var(--sample-line); color: var(--sample); }
+  .shot.long { max-height: 78vh; overflow-y: auto; overflow-x: hidden; }
+  .shot.long img { width: 100%; height: auto; }
+  .base-note { font-size: 13px; color: var(--muted); margin: 0 0 12px; line-height: 1.5; }
+  /* modal */
+  .modal-bg {
+    display: none; position: fixed; inset: 0; background: rgba(20, 16, 12, .55);
+    z-index: 40; padding: 24px 16px; overflow: auto;
+  }
+  .modal-bg.show { display: block; }
+  .modal {
+    max-width: 1080px; margin: 20px auto; background: var(--paper);
+    border-radius: 16px; padding: 18px 18px 22px; box-shadow: 0 20px 50px rgba(0,0,0,.25);
+  }
+  .modal-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+  .modal-head h2 { margin: 0 0 4px; font-size: 18px; }
+  .modal-head p { margin: 0; color: var(--muted); font-size: 13px; }
+  .icon-btn { border: 0; background: #efeae1; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-size: 18px; }
+  .modes { display: flex; gap: 6px; margin: 14px 0 12px; }
+  .modes button {
+    border: 1px solid var(--line); background: #fff; border-radius: 999px;
+    padding: 5px 12px; font: inherit; font-size: 13px; cursor: pointer;
+  }
+  .modes button.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .shot { background: #111; border-radius: 10px; overflow: hidden; position: relative; min-height: 160px; }
+  .shot img { width: 100%; display: block; background: #111; }
+  .shot .tag {
+    position: absolute; top: 8px; left: 8px; font-size: 12px; font-weight: 700;
+    padding: 2px 8px; border-radius: 999px; color: #fff;
+  }
+  .shot .tag.before { background: var(--before); }
+  .shot .tag.after { background: var(--after); }
+  .shot-cap { display: flex; justify-content: space-between; align-items: baseline; font-size: 12px; font-weight: 700; margin: 0 0 6px; }
+  .shot-cap.before { color: var(--before); }
+  .shot-cap.after { color: var(--after); }
+  .overlay-box, .slider-box { position: relative; background: #111; border-radius: 10px; overflow: hidden; }
+  .overlay-box img { width: 100%; display: block; }
+  .overlay-box .top { position: absolute; inset: 0; }
+  .overlay-box .top img { opacity: .5; }
+  .slider-box { --pct: 50%; position: relative; }
+  .slider-box img.base { width: 100%; display: block; }
+  .slider-box img.before-layer {
+    position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill;
+    clip-path: inset(0 calc(100% - var(--pct)) 0 0);
+    pointer-events: none;
+  }
+  .slider-box .bar {
+    position: absolute; top: 0; bottom: 0; left: var(--pct); width: 2px; background: #fff;
+    transform: translateX(-1px); pointer-events: none; z-index: 2;
+  }
+  .slider-box .bar::after {
+    content: ""; position: absolute; top: 50%; left: 50%; width: 28px; height: 28px;
+    border: 2px solid #fff; border-radius: 50%; transform: translate(-50%,-50%);
+    background: rgba(0,0,0,.35);
+  }
+  .slider-box input[type=range] {
+    position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: ew-resize;
+  }
+  .missing { color: #ccc; text-align: center; padding: 40px 10px; font-size: 13px; }
+  footer.foot {
+    margin-top: 28px; color: var(--muted); font-size: 12px;
+    display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: center;
+  }
+  footer.foot button.link {
+    border: 1px solid var(--line); background: var(--paper); border-radius: 999px;
+    padding: 6px 12px; font: inherit; font-size: 12px; cursor: pointer; color: var(--ink);
+  }
+
+  /* top10 */
+  .top10-wrap { display: flex; flex-direction: column; gap: 14px; }
+  .top10-head {
+    background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 14px 16px;
+  }
+  .top10-head h2 { margin: 0 0 6px; font-size: 16px; }
+  .top10-head .verdict { font-size: 15px; font-weight: 650; margin: 0 0 8px; }
+  .top10-head .verdict.changed { color: var(--before); }
+  .top10-head .fixed-note { font-size: 13px; color: var(--muted); margin: 0; line-height: 1.55; }
+  .top10-head .day-note, .top10-head .flow { font-size: 13px; color: var(--muted); margin: 8px 0 0; }
+  .top10-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .top10-col {
+    background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 12px 12px 14px; overflow: hidden;
+  }
+  .top10-col h3 { margin: 0 0 4px; font-size: 15px; }
+  .top10-col .when { font-size: 12px; color: var(--muted); margin: 0 0 10px; }
+  .top10-row {
+    display: grid; grid-template-columns: 36px 1fr 72px; gap: 8px;
+    align-items: center; padding: 8px; border-radius: 10px;
+    border: 1px solid transparent;
+  }
+  .top10-row + .top10-row { margin-top: 4px; }
+  .top10-row.changed { background: #f8ece8; border-color: #e8c4c0; }
+  .top10-row .rank { font-weight: 700; font-variant-numeric: tabular-nums; font-size: 15px; }
+  .top10-row .name { font-size: 14px; font-weight: 650; }
+  .top10-row .meta { font-size: 12px; color: var(--muted); margin-top: 1px; }
+  .top10-row .shot-mini {
+    width: 72px; height: 72px; border-radius: 8px; overflow: hidden;
+    background: #111; cursor: pointer; padding: 0; border: 0;
+  }
+  .top10-row .shot-mini img { width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; }
+  .top10-row .shot-mini.none {
+    cursor: default; background: #efeae1; color: var(--muted);
+    font-size: 11px; display: flex; align-items: center; justify-content: center;
+    text-align: center; padding: 4px;
+  }
+  @media (max-width: 760px) {
+    .card { grid-template-columns: 1fr; }
+    .pair, .base-layout, .top10-cols { grid-template-columns: 1fr; }
+    .wrap { padding: 16px 12px 60px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <h1>前台变动日志 <span id="monthTitle">2026年11月</span></h1>
+      <p>betroia.com · H5 375×812 · 西语 / 英文 · 只看不改</p>
+    </div>
+    <nav class="tabs" role="tablist">
+      <button type="button" class="on" data-tab="changes" id="tabChanges">变化记录</button>
+      <button type="button" data-tab="baseline" id="tabBaseline">基准截图</button>
+      <button type="button" data-tab="top10" id="tabTop10">首页 TOP 10</button>
+    </nav>
+  </header>
+
+  <div class="demo-banner" id="demoBanner">
+    当前打开了<strong>示例数据</strong>，日期和截图都是虚构的，不是真实巡检记录。正式查看请关掉示例。
+  </div>
+
+  <div class="toolbar" id="toolbar"></div>
+  <div class="stats" id="stats"></div>
+
+  <section id="viewChanges"></section>
+  <section id="viewBaseline" hidden></section>
+  <section id="viewTop10" hidden></section>
+
+  <footer class="foot">
+    <span>时间均为埃里温（UTC+4）。双击本文件即可打开，不需要联网。候选变化要人看过才算确认。</span>
+    <button type="button" class="link" id="demoToggle">查看示例</button>
+  </footer>
+</div>
+
+<div class="modal-bg" id="modalBg" role="dialog" aria-modal="true">
+  <div class="modal" id="modal"></div>
+</div>
+
+<script src="data_2026-11.js"></script>
+<script>
+(function () {
+  const DATA = window.DATA || { month: "2026-11", changes: [], baselines: {}, dates: [], types: [] };
+  const TYPES = DATA.types || ["游戏新增","游戏删减","游戏换位","banner 新增","banner 下架","banner 换顺序","文案","活动名","活动新增","活动下架","布局","其他"];
+  const params = new URLSearchParams(location.search);
+  const state = {
+    tab: (["changes", "baseline", "top10"].indexOf(params.get("tab")) >= 0) ? params.get("tab") : "changes",
+    demo: params.get("demo") === "1",
+    date: params.get("date") || "",
+    lang: params.get("lang") || "",
+    page: params.get("page") || "",
+    area: params.get("area") || "",
+    type: params.get("type") || "",
+    mode: "side",
+    overlay: 0.5,
+    openId: params.get("open") || "",
+    basePage: params.get("basePage") || "",
+  };
+
+  const $ = (id) => document.getElementById(id);
+  const monthTitle = (DATA.month || "2026-11").replace(/^(\d{4})-(\d{2})$/, "$1年$2月");
+  $("monthTitle").textContent = monthTitle;
+
+  function allChanges(includeDemo) {
+    const list = DATA.changes || [];
+    return list.filter((c) => includeDemo || !c.sample);
+  }
+  function dateList() {
+    const set = new Set(DATA.dates || []);
+    if (DATA.today) set.add(DATA.today);
+    allChanges(state.demo).forEach((c) => { if (c.date) set.add(c.date); });
+    const bases = DATA.baselines || {};
+    Object.keys(bases).forEach((d) => {
+      if (bases[d] && bases[d]._demo && !state.demo) return;
+      set.add(d);
+    });
+    if (!state.demo) {
+      (DATA.demo_dates || []).forEach((d) => {
+        if (d !== DATA.today) set.delete(d);
+      });
+    } else {
+      (DATA.demo_dates || []).forEach((d) => set.add(d));
+    }
+    return Array.from(set).sort();
+  }
+  function defaultDate() {
+    if (state.date === "all") return "all";
+    const dates = dateList();
+    if (state.date && (dates.includes(state.date) || state.date === "all")) return state.date;
+    if (state.demo && (DATA.demo_dates || []).length) return DATA.demo_dates[DATA.demo_dates.length - 1];
+    if (DATA.today && dates.includes(DATA.today)) return DATA.today;
+    return dates[dates.length - 1] || DATA.today || "";
+  }
+  function visibleChanges() {
+    const date = defaultDate();
+    return allChanges(state.demo).filter((c) => {
+      if (date && date !== "all" && c.date !== date) return false;
+      if (state.lang && changeLangs(c).indexOf(state.lang) < 0) return false;
+      if (state.page && c.page !== state.page) return false;
+      if (state.area && c.area !== state.area) return false;
+      if (state.type && c.type !== state.type) return false;
+      return true;
+    });
+  }
+  function langLabel(lang) {
+    return lang === "es" ? "西语" : lang === "en" ? "英文" : (lang || "");
+  }
+  function changeLangs(c) {
+    if (c && Array.isArray(c.langs) && c.langs.length) return c.langs;
+    const raw = c && c.lang;
+    if (Array.isArray(raw)) return raw.filter(Boolean);
+    if (raw === "西英" || raw === "both") return ["es", "en"];
+    if (typeof raw === "string" && /[,/、]/.test(raw)) {
+      return raw.split(/[,/、]/).map((s) => s.trim()).filter(Boolean).map((s) => s === "西语" ? "es" : s === "英文" ? "en" : s);
+    }
+    return raw ? [raw] : [];
+  }
+  function langChips(c) {
+    const langs = changeLangs(c);
+    if (!langs.length) return "";
+    return langs.map((lang) => '<span class="chip">' + escapeHtml(langLabel(lang)) + "</span>").join("");
+  }
+  function langHeading(c) {
+    return changeLangs(c).map(langLabel).filter(Boolean).join(" / ");
+  }
+  function shotSet(c, which) {
+    if (which === "en" && (c.before_en || c.after_en || c.diff_en)) {
+      return { before: c.before_en || "", after: c.after_en || "", diff: c.diff_en || "" };
+    }
+    return { before: c.before || "", after: c.after || "", diff: c.diff || "" };
+  }
+  function hasEnShots(c) {
+    return !!(c && (c.before_en || c.after_en || c.diff_en));
+  }
+  function escapeHtml(s) {
+    return String(s == null ? "" : s)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+  function imgTag(src, alt) {
+    if (!src) return '<div class="missing">没有截图</div>';
+    return '<img src="' + escapeHtml(src) + '" alt="' + escapeHtml(alt || "") + '" onerror="this.parentNode.innerHTML=\'<div class=missing>截图打不开</div>\'" />';
+  }
+
+  function renderToolbar() {
+    const dates = dateList();
+    const date = defaultDate();
+    const source = state.tab === "changes" ? visibleChanges() : allChanges(state.demo);
+    const pages = {};
+    const areas = new Set();
+    allChanges(state.demo).forEach((c) => {
+      pages[c.page] = c.page_title || c.page;
+      if (c.area) areas.add(c.area);
+    });
+    // also from baselines
+    const bases = relevantBaselines();
+    Object.values(bases).forEach((langMap) => {
+      ["es", "en"].forEach((lang) => {
+        const man = langMap[lang];
+        if (!man || !man.pages) return;
+        man.pages.forEach((p) => { pages[p.id] = p.title || p.id; });
+      });
+    });
+    const dateOpts = ['<option value="all">整月</option>']
+      .concat(dates.map((d) => '<option value="' + d + '"' + (d === date ? " selected" : "") + ">" + d + "</option>"));
+    if (date === "all") {
+      // keep
+    } else if (!dates.includes(date) && date) {
+      dateOpts.push('<option value="' + date + '" selected>' + date + "</option>");
+    }
+    $("toolbar").innerHTML = `
+      <label>日期
+        <select id="fDate">${date === "all" ? dateOpts.join("") : dateOpts.map((x) => x).join("")}</select>
+      </label>
+      <label>语言
+        <select id="fLang">
+          <option value="">全部</option>
+          <option value="es"${state.lang === "es" ? " selected" : ""}>西语</option>
+          <option value="en"${state.lang === "en" ? " selected" : ""}>英文</option>
+        </select>
+      </label>
+      <label>页面
+        <select id="fPage">
+          <option value="">全部</option>
+          ${Object.keys(pages).sort().map((k) => '<option value="' + escapeHtml(k) + '"' + (state.page === k ? " selected" : "") + ">" + escapeHtml(pages[k]) + "</option>").join("")}
+        </select>
+      </label>
+      <label>区域
+        <select id="fArea">
+          <option value="">全部</option>
+          ${Array.from(areas).sort().map((a) => '<option value="' + escapeHtml(a) + '"' + (state.area === a ? " selected" : "") + ">" + escapeHtml(a) + "</option>").join("")}
+        </select>
+      </label>
+      <label>变化类型
+        <select id="fType">
+          <option value="">全部</option>
+          ${TYPES.map((t) => '<option value="' + escapeHtml(t) + '"' + (state.type === t ? " selected" : "") + ">" + escapeHtml(t) + "</option>").join("")}
+        </select>
+      </label>
+    `;
+    $("fDate").value = date || "all";
+    $("fDate").onchange = (e) => { state.date = e.target.value; render(); };
+    $("fLang").onchange = (e) => { state.lang = e.target.value; render(); };
+    $("fPage").onchange = (e) => { state.page = e.target.value; render(); };
+    $("fArea").onchange = (e) => { state.area = e.target.value; render(); };
+    $("fType").onchange = (e) => { state.type = e.target.value; render(); };
+  }
+
+  function monthStats() {
+    const list = allChanges(state.demo);
+    const counts = {};
+    TYPES.forEach((t) => counts[t] = 0);
+    list.forEach((c) => { counts[c.type] = (counts[c.type] || 0) + 1; });
+    const max = Math.max(1, ...Object.values(counts));
+    const total = list.length;
+    const parts = TYPES.filter((t) => counts[t] > 0 || true).map((t) => {
+      const n = counts[t] || 0;
+      const w = Math.round((n / max) * 100);
+      return `<div class="bar-item"><div class="lab"><span>${escapeHtml(t)}</span><b>${n}</b></div><div class="track"><i style="width:${w}%"></i></div></div>`;
+    }).join("");
+    $("stats").innerHTML = `<h2>本月统计${state.demo ? "（含示例）" : ""} · 共 ${total} 条</h2><div class="bars">${parts}</div>`;
+  }
+
+  function renderChanges() {
+    const date = defaultDate();
+    const items = visibleChanges();
+    if (!items.length) {
+      const label = date === "all" ? "这个月" : (date || "今天");
+      $("viewChanges").innerHTML = `<div class="empty"><p class="big">今天没有变化</p><p>${escapeHtml(label)}没有记到前台改动。基准截图仍可在另一个页签里查看。</p></div>`;
+      return;
+    }
+    $("viewChanges").innerHTML = `<div class="list">${items.map((c) => cardHtml(c)).join("")}</div>`;
+    $("viewChanges").querySelectorAll(".card").forEach((el) => {
+      el.addEventListener("click", () => openModal(el.getAttribute("data-id")));
+      el.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openModal(el.getAttribute("data-id")); } });
+    });
+  }
+  function cardHtml(c) {
+    const day = (c.datetime || c.date || "").replace("（埃里温，示例）", "").replace("（埃里温）", "").trim();
+    return `<article class="card" tabindex="0" data-id="${escapeHtml(c.id)}">
+      <div class="when"><b>${escapeHtml((c.date || "").slice(5) || day)}</b>${escapeHtml(day)}</div>
+      <div>
+        <h3>${escapeHtml(c.page_title || c.page)} · ${escapeHtml(c.area || "")}</h3>
+        <p>${escapeHtml(c.content)}</p>
+        <div class="chips">
+          ${c.sample ? '<span class="chip sample">示例数据</span>' : ""}
+          <span class="chip type">${escapeHtml(c.type)}</span>
+          ${langChips(c)}
+          ${c.confirmed ? '<span class="chip">已确认</span>' : '<span class="chip wait">待确认</span>'}
+        </div>
+      </div>
+    </article>`;
+  }
+
+  function relevantBaselines() {
+    const out = {};
+    const bases = DATA.baselines || {};
+    Object.keys(bases).forEach((d) => {
+      const entry = bases[d];
+      if (!entry) return;
+      if (entry._demo && !state.demo) return;
+      out[d] = entry;
+    });
+    return out;
+  }
+
+  function renderBaseline() {
+    const date = defaultDate();
+    const bases = relevantBaselines();
+    const useDate = date === "all" ? (DATA.today || Object.keys(bases).sort().pop() || "") : date;
+    const entry = bases[useDate];
+    const lang = state.lang || "es";
+    if (!entry || !(entry[lang] && (entry[lang].pages || []).length)) {
+      $("viewBaseline").innerHTML = `<div class="empty"><p class="big">这一天还没有基准截图</p><p>11-14 的基准不完整，缺页在 11-15 补拍后会出现在这里。</p></div>`;
+      return;
+    }
+    const man = entry[lang];
+    const pages = man.pages || [];
+    if (!state.basePage || !pages.some((p) => p.id === state.basePage)) {
+      state.basePage = pages[0] && pages[0].id;
+    }
+    const page = pages.find((p) => p.id === state.basePage) || pages[0];
+    const nav = pages.map((p) => `<button type="button" class="${p.id === page.id ? "on" : ""}" data-id="${escapeHtml(p.id)}">${escapeHtml(p.title || p.id)}</button>`).join("");
+    const captureLabel = { full: "整页", viewport: "视口", stitched: "拼接", misstitch: "串页", crop: "裁切" };
+    const thumbs = (page.blocks || []).map((b) => {
+      const src = b.src || b.screenshot || "";
+      const thumb = b.thumb || src;
+      const h = Number(b.height || 0);
+      const long = h >= 2000;
+      const cap = b.capture || "";
+      const capText = captureLabel[cap] || cap;
+      const size = (b.width && b.height) ? (b.width + "×" + b.height) : "";
+      const bad = b.usable === false || cap === "misstitch";
+      const chips = [
+        capText ? `<span class="chip capture${bad ? " bad" : ""}">${escapeHtml(capText)}</span>` : "",
+        size ? `<span class="chip">${escapeHtml(size)}</span>` : "",
+        bad ? `<span class="chip capture bad">不能当整页基准</span>` : ""
+      ].filter(Boolean).join(" ");
+      const note = b.notes ? `<div class="meta">${escapeHtml(b.notes)}</div>` : "";
+      return `<figure class="thumb${bad ? " unusable" : ""}" data-src="${escapeHtml(src)}" data-title="${escapeHtml((page.title || "") + " · " + (b.name || ""))}" data-height="${h}">
+        <div class="frame${long ? " long" : ""}">${imgTag(thumb, b.name)}</div>
+        <figcaption><b>${escapeHtml(b.name || b.id)}</b><div class="meta">${chips}</div>${note}</figcaption>
+      </figure>`;
+    }).join("");
+    const dayNote = (useDate === "2026-11-14")
+      ? `<p class="base-note">11-14 基准不完整。下面只列出当天实际采到的图。标了「串页」或「不能当整页基准」的，11-15 要补拍后才作为该页基准。完整清单和缺项见 PLAN.md。</p>`
+      : (man.notes ? `<p class="base-note">${escapeHtml(man.notes)}</p>` : "");
+    $("viewBaseline").innerHTML = `
+      <div class="base-layout">
+        <aside class="page-nav">
+          <div class="lang-switch">
+            <button type="button" class="${lang === "es" ? "on" : ""}" data-lang="es">西语</button>
+            <button type="button" class="${lang === "en" ? "on" : ""}" data-lang="en">英文</button>
+          </div>
+          ${nav}
+        </aside>
+        <div>
+          <p style="margin:0 0 10px;color:var(--muted);font-size:13px">${escapeHtml(useDate)} · ${escapeHtml(langLabel(lang))} · ${escapeHtml(page.title || "")}${page.url ? " · " + escapeHtml(page.url) : ""}</p>
+          ${dayNote}
+          <div class="thumbs">${thumbs || '<div class="empty">这一页没有截图</div>'}</div>
+        </div>
+      </div>`;
+    $("viewBaseline").querySelectorAll(".page-nav button[data-id]").forEach((btn) => {
+      btn.onclick = () => { state.basePage = btn.getAttribute("data-id"); renderBaseline(); };
+    });
+    $("viewBaseline").querySelectorAll(".page-nav button[data-lang]").forEach((btn) => {
+      btn.onclick = () => { state.lang = btn.getAttribute("data-lang"); render(); };
+    });
+    $("viewBaseline").querySelectorAll(".thumb").forEach((el) => {
+      el.onclick = () => openLightbox(el.getAttribute("data-src"), el.getAttribute("data-title"), el.getAttribute("data-height"));
+    });
+  }
+
+  function openLightbox(src, title, height) {
+    const long = Number(height || 0) >= 2000;
+    $("modal").innerHTML = `
+      <div class="modal-head">
+        <div><h2>${escapeHtml(title || "截图")}</h2>
+          ${long ? '<p>这是长图，可以在框里上下滚动查看。</p>' : ""}</div>
+        <button type="button" class="icon-btn" id="closeModal">×</button>
+      </div>
+      <div class="shot${long ? " long" : ""}" style="margin-top:12px">${imgTag(src, title)}</div>`;
+    $("modalBg").classList.add("show");
+    $("closeModal").onclick = closeModal;
+  }
+
+  function openModal(id) {
+    const c = allChanges(true).find((x) => x.id === id);
+    if (!c) return;
+    state.openId = id;
+    const shotLang = (hasEnShots(c) && state.shotLang === "en") ? "en" : "es";
+    const shots = shotSet(c, shotLang);
+    const modes = ["side", "overlay", "slider"].concat(shots.diff ? ["diff"] : []);
+    if (state.mode === "diff" && !shots.diff) state.mode = "side";
+    const modeLabel = { side: "并排", overlay: "叠加", slider: "滑块", diff: "差异高亮" };
+    const modeBtns = modes.map((m) => `<button type="button" class="${state.mode === m ? "on" : ""}" data-mode="${m}">${modeLabel[m]}</button>`).join("");
+    const shotLangBtns = hasEnShots(c) ? `<div class="modes shot-langs">
+        <button type="button" class="${shotLang === "es" ? "on" : ""}" data-shotlang="es">西语截图</button>
+        <button type="button" class="${shotLang === "en" ? "on" : ""}" data-shotlang="en">英文截图</button>
+      </div>` : "";
+    let body = "";
+    if (state.mode === "overlay") {
+      body = `<div class="overlay-box" id="overlayBox">
+        ${imgTag(shots.before, "前")}
+        <div class="top">${imgTag(shots.after, "后")}</div>
+      </div>
+      <p style="font-size:12px;color:var(--muted);margin:8px 0 0">拖动滑杆调节后图透明度</p>
+      <input id="ovRange" type="range" min="0" max="100" value="${Math.round((state.overlay || 0.5)*100)}" style="width:100%" />`;
+    } else if (state.mode === "slider") {
+      body = `<div class="slider-box" id="sliderBox" style="--pct:50%">
+        <img class="base" src="${escapeHtml(shots.after || "")}" alt="后" />
+        <img class="before-layer" src="${escapeHtml(shots.before || "")}" alt="前" />
+        <div class="bar"></div>
+        <input type="range" min="0" max="100" value="50" id="slRange" />
+      </div>
+      <p style="font-size:12px;color:var(--muted);margin:8px 0 0">左是改前，右是改后。拖动中间看差异。</p>`;
+    } else if (state.mode === "diff") {
+      body = `<div class="shot">${imgTag(shots.diff, "差异高亮")}<span class="tag after">差异高亮</span></div>`;
+    } else {
+      body = `<div class="pair">
+        <div><div class="shot-cap before">前</div><div class="shot">${imgTag(shots.before, "前")}</div></div>
+        <div><div class="shot-cap after">后</div><div class="shot">${imgTag(shots.after, "后")}</div></div>
+      </div>`;
+    }
+    $("modal").innerHTML = `
+      <div class="modal-head">
+        <div>
+          <h2>${escapeHtml(c.page_title || c.page)} · ${escapeHtml(c.area || "")}
+            ${c.sample ? '<span class="chip sample">示例数据</span>' : ""}</h2>
+          <p>${escapeHtml(langHeading(c))} · ${escapeHtml(c.type)} · ${escapeHtml(c.datetime || c.date || "")} · ${c.confirmed ? "已确认" : "待确认"}</p>
+        </div>
+        <button type="button" class="icon-btn" id="closeModal" aria-label="关闭">×</button>
+      </div>
+      <p style="margin:10px 0 0">${escapeHtml(c.content)}</p>
+      ${shotLangBtns}
+      <div class="modes">${modeBtns}</div>
+      ${body}`;
+    $("modalBg").classList.add("show");
+    $("closeModal").onclick = closeModal;
+    $("modal").querySelectorAll(".modes button[data-mode]").forEach((btn) => {
+      btn.onclick = () => { state.mode = btn.getAttribute("data-mode"); openModal(id); };
+    });
+    $("modal").querySelectorAll(".modes button[data-shotlang]").forEach((btn) => {
+      btn.onclick = () => { state.shotLang = btn.getAttribute("data-shotlang"); openModal(id); };
+    });
+    const ov = $("ovRange");
+    if (ov) {
+      const apply = () => {
+        const top = $("overlayBox") && $("overlayBox").querySelector(".top img");
+        if (top) top.style.opacity = (ov.value / 100).toString();
+        state.overlay = ov.value / 100;
+      };
+      ov.addEventListener("input", apply);
+      apply();
+    }
+    const sl = $("slRange");
+    if (sl) {
+      const box = $("sliderBox");
+      const apply = () => { box.style.setProperty("--pct", sl.value + "%"); };
+      sl.addEventListener("input", apply);
+      apply();
+    }
+  }
+  function closeModal() {
+    $("modalBg").classList.remove("show");
+    $("modal").innerHTML = "";
+    state.openId = "";
+  }
+  $("modalBg").addEventListener("click", (e) => { if (e.target === $("modalBg")) closeModal(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
+
+  function top10Date() {
+    const all = DATA.top10 || {};
+    const dates = Object.keys(all).sort();
+    const date = defaultDate();
+    if (date && date !== "all" && all[date]) return date;
+    if (DATA.today && all[DATA.today]) return DATA.today;
+    return dates[dates.length - 1] || "";
+  }
+
+  function top10Col(entry, date, lang) {
+    const title = lang === "es" ? "西语" : "英文";
+    const when = ((entry.captured_at || {})[lang]) || "";
+    const items = entry[lang] || [];
+    if (!items.length) {
+      return `<div class="top10-col"><h3>${title}</h3><p class="when">这一天还没有${title}记录</p></div>`;
+    }
+    const rows = items.map((it) => {
+      const changed = it.status === "变了";
+      const bits = [];
+      if (it.provider) bits.push(escapeHtml(it.provider));
+      if (it.players != null && it.players !== "") bits.push(escapeHtml(String(it.players)) + " 人");
+      const status = it.status_label || it.status || "";
+      if (status) bits.push(status);
+      const src = it.src || "";
+      const thumb = it.thumb || src;
+      const mini = src
+        ? `<button type="button" class="shot-mini" data-src="${escapeHtml(src)}" data-title="${escapeHtml((it.name || "") + " · " + title + " · 第 " + it.rank + " 名")}"><img src="${escapeHtml(thumb)}" alt=""></button>`
+        : `<div class="shot-mini none">未入画</div>`;
+      return `<div class="top10-row${changed ? " changed" : ""}">
+        <div class="rank">${escapeHtml(String(it.rank))}</div>
+        <div>
+          <div class="name">${escapeHtml(it.name || "（未记名称）")}</div>
+          <div class="meta">${bits.join(" · ")}</div>
+        </div>
+        ${mini}
+      </div>`;
+    }).join("");
+    return `<div class="top10-col">
+      <h3>${title}</h3>
+      <p class="when">${when ? escapeHtml(when) + "（埃里温）" : ""}</p>
+      ${rows}
+    </div>`;
+  }
+
+  function renderTop10() {
+    const all = DATA.top10 || {};
+    const requested = defaultDate();
+    const date = top10Date();
+    const entry = all[date];
+    const box = $("viewTop10");
+    if (!entry) {
+      const label = (requested && requested !== "all") ? requested : "这一天";
+      box.innerHTML = `<div class="empty"><p class="big">这一天还没有 TOP 10 记录</p><p>${escapeHtml(label)}还没有写成 top10.json。每天巡检会记下第 1 到第 10 名，再跑 build_html。</p></div>`;
+      return;
+    }
+    const changed = /有变/.test(entry.summary || "");
+    const flows = [];
+    ["es", "en"].forEach((lang) => {
+      const label = lang === "es" ? "西语" : "英文";
+      const ent = ((entry.entered || {})[lang] || []);
+      const exi = ((entry.exited || {})[lang] || []);
+      if (ent.length || exi.length) {
+        const bits = [];
+        if (ent.length) bits.push("新进 " + ent.join("、"));
+        if (exi.length) bits.push("跌出 " + exi.join("、"));
+        flows.push(label + "：" + bits.join("；"));
+      }
+    });
+    const note = DATA.top10_note || "后台「首页组件配置_new」最后更新 11-11 01:32:30 墨西哥时间（埃里温 11/11 11:32），之后没人动过；顺序变了说明可能是动态排序。";
+    box.innerHTML = `
+      <div class="top10-wrap">
+        <div class="top10-head">
+          <h2>首页 TOP 10 · ${escapeHtml(date)}</h2>
+          <p class="verdict${changed ? " changed" : ""}">${escapeHtml(entry.summary || "")}</p>
+          <p class="fixed-note">${escapeHtml(note)}</p>
+          ${flows.length ? `<p class="flow">${escapeHtml(flows.join("。"))}</p>` : ""}
+          ${entry.note ? `<p class="day-note">${escapeHtml(entry.note)}</p>` : ""}
+        </div>
+        <div class="top10-cols">
+          ${top10Col(entry, date, "es")}
+          ${top10Col(entry, date, "en")}
+        </div>
+      </div>`;
+    box.querySelectorAll(".shot-mini[data-src]").forEach((el) => {
+      el.onclick = () => openLightbox(el.getAttribute("data-src"), el.getAttribute("data-title"), 0);
+    });
+  }
+
+  function renderTabs() {
+    $("tabChanges").classList.toggle("on", state.tab === "changes");
+    $("tabBaseline").classList.toggle("on", state.tab === "baseline");
+    $("tabTop10").classList.toggle("on", state.tab === "top10");
+    $("viewChanges").hidden = state.tab !== "changes";
+    $("viewBaseline").hidden = state.tab !== "baseline";
+    $("viewTop10").hidden = state.tab !== "top10";
+    $("stats").style.display = state.tab === "changes" ? "" : "none";
+  }
+
+  function render() {
+    if (!state.date) state.date = defaultDate();
+    $("demoBanner").style.display = state.demo ? "block" : "none";
+    $("demoToggle").textContent = state.demo ? "关闭示例" : "查看示例";
+    renderTabs();
+    renderToolbar();
+    monthStats();
+    if (state.tab === "changes") renderChanges();
+    else if (state.tab === "top10") renderTop10();
+    else renderBaseline();
+  }
+
+  $("tabChanges").onclick = () => { state.tab = "changes"; render(); };
+  $("tabBaseline").onclick = () => { state.tab = "baseline"; render(); };
+  $("tabTop10").onclick = () => { state.tab = "top10"; render(); };
+  $("demoToggle").onclick = () => {
+    state.demo = !state.demo;
+    if (state.demo) {
+      state.date = (DATA.demo_dates || []).slice(-1)[0] || state.date;
+    } else {
+      state.date = DATA.today || state.date;
+      if (state.openId) closeModal();
+    }
+    render();
+  };
+
+  render();
+  if (state.openId && state.demo) openModal(state.openId);
+})();
+</script>
+</body>
+</html>
